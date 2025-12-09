@@ -1,4 +1,7 @@
 torch
 pandas
+nltk
 scikit-learn
 transformers
+seaborn
+openpyxl
