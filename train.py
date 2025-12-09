@@ -77,7 +77,7 @@ def train_lstm(data,
     optimizer = optim.Adam(model.parameters(), lr=lr)
     loss_fn = nn.CrossEntropyLoss()
 
-    best_val_acc = 0.0
+    best_val_loss = 100
     for epoch in range(1, epochs + 1):
         model.train()
         running_loss = 0.0
@@ -107,10 +107,10 @@ def train_lstm(data,
         print(f"Epoch {epoch}: train_loss={train_loss:.4f} train_acc={train_acc:.4f} val_loss={val_loss:.4f} val_acc={val_acc:.4f}")
 
         # save best
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
             torch.save({"model_state": model.state_dict(), "vocab": full_data.vocab._tok2idx}, save_path)
-            print(f"Saved best model to {save_path}")
+            print(f"Saved best model to {save_path} (val_loss={val_loss:.4f})")
 
 
 def evaluate_bert(model, dataloader, device):
@@ -180,7 +180,7 @@ def train_bert(df, test_split=0.1, text_col="text", label_col="label",
         num_training_steps=total_steps
     )
     
-    best_val_acc = 0.0
+    best_val_loss = 100
     
     for epoch in range(1, epochs + 1):
         model.train()
@@ -217,10 +217,10 @@ def train_bert(df, test_split=0.1, text_col="text", label_col="label",
         print(f"Epoch {epoch}: train_loss={train_loss:.4f} train_acc={train_acc:.4f} val_loss={val_loss:.4f} val_acc={val_acc:.4f}")
         
         # Save best model
-        if val_acc > best_val_acc:
-            best_val_acc = val_acc
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
             torch.save({"model_state": model.state_dict()}, save_path)
-            print(f"  Saved best model to {save_path} (val_acc={val_acc:.4f})")
+            print(f"Saved best model to {save_path} (val_loss={val_loss:.4f})")
 
 
 
