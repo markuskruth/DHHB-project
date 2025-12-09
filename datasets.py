@@ -42,7 +42,7 @@ class Vocabulary:
 
 class LSTMDataset(Dataset):
     """
-    A simple dataset that converts text to index sequences that
+    A simple dataset for LSTM that converts text to index sequences that
     match vocabulary word instances
     """
 
@@ -95,8 +95,8 @@ def lstm_collate_fn(batch):
 
 class BertDataset(Dataset):
     """
-    Dataset for BERT fine-tuning on text classification.
-    Uses HuggingFace tokenizer.
+    Dataset for BERT model
+    Uses HuggingFace tokenizer
     """
 
     def __init__(self, df, text_col="text", label_col="label", model_name="bert-base-uncased", max_length=128):

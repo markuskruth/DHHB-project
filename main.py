@@ -5,6 +5,8 @@ from analyze_model import analyze_model
 import nltk
 
 if __name__ == "__main__":
+    #load_data(combine=False, preprocess=True, print_statistics=True)
+    
     #nltk.download("stopwords")
     #visualize_data(preprocess=True)
 

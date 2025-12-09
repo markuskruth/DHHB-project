@@ -1,20 +1,17 @@
-import argparse
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
 import torch.optim as optim
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
+from transformers import get_linear_schedule_with_warmup
 
 from datasets import LSTMDataset, lstm_collate_fn
 from models import LSTMClassifier
 from load_data import load_data
-
-from transformers import get_linear_schedule_with_warmup
-import pandas as pd
-
 from datasets import BertDataset, bert_collate_fn
 from models import BertClassifier
+
 
 
 def evaluate_lstm(model, dataloader, device):
@@ -34,7 +31,10 @@ def evaluate_lstm(model, dataloader, device):
             preds = logits.argmax(dim=1)
             correct += (preds == y).sum().item()
             total += x.size(0)
-    return total_loss / total, correct / total
+    
+    val_loss = total_loss / total
+    val_acc = correct / total
+    return val_loss, val_acc
 
 
 def train_lstm(data,
@@ -59,14 +59,14 @@ def train_lstm(data,
 
     # Get train/test split indices
     idx = list(range(len(full_data)))
-    train_idxs, test_idxs = train_test_split(idx, test_size=test_split, random_state=42, shuffle=True)
+    train_idxs, val_idxs = train_test_split(idx, test_size=test_split, random_state=42, shuffle=True)
 
     # Get train/test subsets of the full dataset
     train_ds = Subset(full_data, train_idxs)
-    test_ds = Subset(full_data, test_idxs)
+    val_ds = Subset(full_data, val_idxs)
 
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, collate_fn=lstm_collate_fn)
-    test_loader = DataLoader(test_ds, batch_size=batch_size, shuffle=False, collate_fn=lstm_collate_fn)
+    val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, collate_fn=lstm_collate_fn)
 
     vocab_size = len(full_data.vocab)
     n_labels = 2
@@ -102,7 +102,7 @@ def train_lstm(data,
 
         train_loss = running_loss / total
         train_acc = correct / total
-        val_loss, val_acc = evaluate_lstm(model, test_loader, device)
+        val_loss, val_acc = evaluate_lstm(model, val_loader, device)
 
         print(f"Epoch {epoch}: train_loss={train_loss:.4f} train_acc={train_acc:.4f} val_loss={val_loss:.4f} val_acc={val_acc:.4f}")
 
@@ -114,7 +114,7 @@ def train_lstm(data,
 
 
 def evaluate_bert(model, dataloader, device):
-    """Evaluate model on validation set."""
+    """Evaluate model on validation set"""
     model.eval()
     correct = 0
     total = 0
@@ -136,14 +136,24 @@ def evaluate_bert(model, dataloader, device):
             correct += (preds == labels).sum().item()
             total += input_ids.size(0)
     
-    return total_loss / total, correct / total
+    val_loss = total_loss / total
+    val_acc = correct / total
+    return val_loss, val_acc
 
 
-def train_bert(df, save_path, test_split=0.1, text_col="text", label_col="label",
-               model_name="bert-base-uncased", batch_size=16, epochs=3,
-               max_length=128, lr=1e-4, weight_decay=0.01
+def train_bert(df, 
+                save_path,
+                test_split=0.1,
+                text_col="text",
+                label_col="label",
+                model_name="bert-base-uncased",
+                batch_size=16,
+                epochs=3,
+                max_length=128,
+                lr=1e-4,
+                weight_decay=0.01
                ):
-    """Train BERT classifier."""
+    """Train BERT classifier"""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     # Train/val split

@@ -7,7 +7,7 @@ from models import LSTMClassifier, BertClassifier
 from datasets import Vocabulary
 from transformers import AutoTokenizer
 
-def load_data(combine, preprocess):
+def load_data(combine, preprocess, print_statistics=False):
     df_reddit = pd.read_excel("data/Reddit_Title.xlsx").rename(columns={"title": "text"})
     df_twitter = pd.read_excel("data/Twitter_Non-Advert.xlsx")
     
@@ -19,7 +19,10 @@ def load_data(combine, preprocess):
         if preprocess:
             df["text_cleaned"] = df["text"].apply(preprocess_text)
             df["text_non_stop"] = df["text_cleaned"].apply(remove_stopwords)
-        
+
+            if print_statistics:
+                _print_statistics(df, "Combined data")
+
         return df
     else:
         if preprocess:
@@ -28,6 +31,10 @@ def load_data(combine, preprocess):
 
             df_reddit["text_non_stop"] = df_reddit["text_cleaned"].apply(remove_stopwords)
             df_twitter["text_non_stop"] = df_twitter["text_cleaned"].apply(remove_stopwords)
+
+            if print_statistics:
+                _print_statistics(df_reddit, "Reddit_data")
+                _print_statistics(df_twitter, "Twitter data")
 
         return df_reddit, df_twitter
 
@@ -58,10 +65,9 @@ def preprocess_text(text):
     
     return text
 
-# REMOVE STOPWORDS NLTK
 def remove_stopwords(text):
     """
-    A function to remove common stop words from the provided text.
+    Removes common stop words from the provided text using nltk stopwords
     """
     sw = stopwords.words("english")
 
@@ -96,7 +102,7 @@ def load_lstm_vocab(model_path):
 
 
 def load_bert_model(model_path, model_name="bert-base-uncased", num_classes=2):
-    """Load a trained BERT model from checkpoint."""
+    """Load a trained BERT model"""
     loaded_model = torch.load(model_path, map_location="cpu")
     model = BertClassifier(model_name=model_name, num_classes=num_classes)
     model.load_state_dict(loaded_model["model_state"])
@@ -105,5 +111,16 @@ def load_bert_model(model_path, model_name="bert-base-uncased", num_classes=2):
 
 
 def get_bert_tokenizer(model_name="bert-base-uncased"):
-    """Get BERT tokenizer."""
     return AutoTokenizer.from_pretrained(model_name)
+
+def _print_statistics(df, dataset_name):
+    print(f"\nStatistics on dataset: {dataset_name}")
+
+    # Print dataframe length
+    print(f"Dataframe length: {len(df)}")
+    
+    # Calculate and print word count statistics for the "text" column
+    word_counts = df["text"].apply(lambda x: len(str(x).split()))
+    print(f"Word count statistics:")
+    print(f"Total words: {word_counts.sum()}")
+    print(f"Mean: {word_counts.mean():.2f}")
