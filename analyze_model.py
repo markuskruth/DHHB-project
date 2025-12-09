@@ -1,7 +1,6 @@
 import torch
 import numpy as np
 from models import LSTMClassifier, BertClassifier
-from LSTM_predictor import predict
 from load_data import load_lstm_model, load_lstm_vocab, load_bert_model, get_bert_tokenizer
 
 
