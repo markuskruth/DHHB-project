@@ -9,21 +9,26 @@ if __name__ == "__main__":
     #visualize_data(preprocess=True)
 
     combine = False
-    train(combine=combine, model="lstm")
-    train(combine=combine, model="bert")
+    #train(combine=combine, model="lstm")
+    #train(combine=combine, model="bert")
 
     combine = True
-    train(combine=combine, model="lstm")
-    train(combine=combine, model="bert")
+    #train(combine=combine, model="lstm")
+    #train(combine=combine, model="bert")
     
-    model_paths = ["model_LSTM_combined.pth", "model_LSTM_reddit.pth", "model_LSTM_twitter.pth"]
-
-"""
-    for path in model_paths:
+    model_paths_lstm = ["model_lstm_combined.pth", "model_lstm_reddit.pth", "model_lstm_twitter.pth"]
+    model_paths_bert = ["model_bert_combined.pth", "model_bert_reddit.pth", "model_bert_twitter.pth"]
+    
+    for path in model_paths_lstm:
         print(f"\nAnalyzing model {path}")
         model_path = "models/" + path
         analyze_model(model_path, model_type="lstm")
     
-    analyze_model(model_path="models/model_bert_combined.pth", model_type="bert")
-"""
+    for path in model_paths_bert:
+        print(f"\nAnalyzing model {path}")
+        model_path = "models/" + path
+        analyze_model(model_path, model_type="bert")
+
+    
+    
     

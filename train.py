@@ -139,10 +139,9 @@ def evaluate_bert(model, dataloader, device):
     return total_loss / total, correct / total
 
 
-def train_bert(df, test_split=0.1, text_col="text", label_col="label",
+def train_bert(df, save_path, test_split=0.1, text_col="text", label_col="label",
                model_name="bert-base-uncased", batch_size=16, epochs=3,
-               max_length=128, lr=1e-4, weight_decay=0.01,
-               save_path="bert_model_1.pth"
+               max_length=128, lr=1e-4, weight_decay=0.01
                ):
     """Train BERT classifier."""
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -229,29 +228,29 @@ def train(combine, model="lstm"):
         if combine:
             model_save_path = "models/model_lstm_combined.pth"
             df_comb = load_data(combine=combine, preprocess=True)
-            train_lstm(data=df_comb, save_path=model_save_path, epochs=5)
+            train_lstm(data=df_comb, save_path=model_save_path, epochs=3)
         else:
             df_reddit, df_twitter = load_data(combine=combine, preprocess=True)
 
             model_save_path_reddit = "models/model_lstm_reddit.pth"
             model_save_path_twitter = "models/model_lstm_twitter.pth"
 
-            train_lstm(data=df_reddit, save_path=model_save_path_reddit, epochs=5)
-            train_lstm(data=df_twitter, save_path=model_save_path_twitter, epochs=5)
+            train_lstm(data=df_reddit, save_path=model_save_path_reddit, epochs=3)
+            train_lstm(data=df_twitter, save_path=model_save_path_twitter, epochs=3)
     
     elif model == "bert":
         if combine:
             model_save_path = "models/model_bert_combined.pth"
             df_comb = load_data(combine=combine, preprocess=False)
-            train_bert(df_comb)
+            train_bert(df_comb, save_path=model_save_path, epochs=1)
         else:
             df_reddit, df_twitter = load_data(combine=combine, preprocess=False)
 
             model_save_path_reddit = "models/model_bert_reddit.pth"
             model_save_path_twitter = "models/model_bert_twitter.pth"
 
-            train_bert(df_reddit)
-            train_bert(df_twitter)
+            train_bert(df_reddit, save_path=model_save_path_reddit, epochs=1)
+            train_bert(df_twitter, save_path=model_save_path_twitter, epochs=1)
 
     else:
         print(f"Unknown model: {model}. Use lstm or bert")
